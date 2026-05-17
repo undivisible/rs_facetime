@@ -2,9 +2,12 @@
 name = "rs_facetime"
 version = "0.1.0"
 edition = "2021"
-description = "FaceTime Audio private API bridge for macOS — separate from rs_imsg"
+description = "Unstable, still in development — FaceTime Audio private API bridge for macOS"
 license = "MPL-2.0"
 repository = "https://github.com/undivisible/rs_facetime"
+readme = "README.md"
+keywords = ["facetime", "macos", "telephony"]
+categories = ["api-bindings", "os::macos-apis"]
 
 [lib]
 name = "rs_facetime"

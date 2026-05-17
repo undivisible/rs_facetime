@@ -1,4 +1,4 @@
-//! FaceTime Audio bridge for macOS — **not** bundled with `rs_imsg`.
+//! FaceTime Audio bridge for macOS — **not** bundled with `rs_imessage`.
 //!
 //! Tier 2: inject a helper dylib into FaceTime.app (SIP off), using a v2
 //! file-queue RPC protocol parallel to [openclaw/imsg](https://github.com/openclaw/imsg).

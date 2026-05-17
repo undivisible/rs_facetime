@@ -1,0 +1,21 @@
+[package]
+name = "rs_facetime"
+version = "0.1.0"
+edition = "2021"
+description = "FaceTime Audio private API bridge for macOS — separate from rs_imsg"
+license = "MPL-2.0"
+repository = "https://github.com/undivisible/rs_facetime"
+
+[lib]
+name = "rs_facetime"
+path = "src/lib.rs"
+
+[features]
+default = []
+private-api = ["dep:uuid"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4"], optional = true }

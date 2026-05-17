@@ -1,6 +1,6 @@
 [package]
 name = "rs_facetime"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Unstable, still in development — FaceTime Audio private API bridge for macOS"
 license = "MPL-2.0"
@@ -13,12 +13,20 @@ categories = ["api-bindings", "os::macos-apis"]
 name = "rs_facetime"
 path = "src/lib.rs"
 
+[[bin]]
+name = "rs_facetime"
+path = "src/bin/rs_facetime.rs"
+required-features = ["cli"]
+
 [features]
 default = []
 private-api = ["dep:uuid"]
+cli = ["dep:clap", "dep:tracing-subscriber", "private-api"]
 
 [dependencies]
+clap = { version = "4", optional = true, features = ["derive", "env"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
+tracing-subscriber = { version = "0.3", optional = true, features = ["env-filter"] }
 uuid = { version = "1", features = ["v4"], optional = true }

@@ -35,6 +35,35 @@ bridge.ping()?;
 
 `RS_FACETIME_BRIDGE_DYLIB` overrides dylib search path.
 
+## CLI
+
+Requires the `cli` feature (includes `private-api`). Build the dylib first.
+
+```bash
+./scripts/build-bridge.sh
+cargo build --features cli
+./target/debug/rs_facetime sip
+./target/debug/rs_facetime connect
+./target/debug/rs_facetime ping --json
+./target/debug/rs_facetime start-call "+15551234567"
+./target/debug/rs_facetime status --json
+./target/debug/rs_facetime end-call
+```
+
+| Command | Description |
+|---------|-------------|
+| `sip` | Show System Integrity Protection status |
+| `ready` | Check bridge lock file (no launch) |
+| `connect` | Inject dylib and launch FaceTime.app |
+| `ping` | Bridge liveness |
+| `status` | Active calls / process info |
+| `start-call <handle>` | Place FaceTime Audio call |
+| `end-call` | Disconnect active calls |
+| `answer-call --call-uuid <uuid>` | Answer incoming call |
+| `leave-call --call-uuid <uuid>` | Leave specific call |
+
+Use `--json` on any command for one JSON object per line on stdout.
+
 ## Build
 
 ```bash

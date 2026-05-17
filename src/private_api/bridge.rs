@@ -28,6 +28,10 @@ impl BridgeClient {
         self.invoke(BridgeAction::Ping, json!({}))
     }
 
+    pub fn status(&self) -> Result<BridgeResponse> {
+        self.invoke(BridgeAction::Status, json!({}))
+    }
+
     pub fn start_call(&self, handle: &str) -> Result<BridgeResponse> {
         self.invoke(
             BridgeAction::StartCall,

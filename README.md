@@ -1,8 +1,6 @@
 # rs_facetime
 
-FaceTime Audio private API bridge for macOS — **Tier 2**, separate from
-[`rs_imsg`](https://github.com/undivisible/rs_imsg) so iMessage work is never
-blocked on FaceTime dylib availability.
+FaceTime Audio private API bridge Rust crate for macOS.
 
 **License:** [Mozilla Public License 2.0](LICENSE)
 
@@ -11,7 +9,7 @@ blocked on FaceTime dylib availability.
 | Piece | State |
 |-------|--------|
 | Rust IPC client + FaceTime.app launcher | Implemented (`private-api` feature) |
-| `rs-facetime-bridge-helper.dylib` | **You must build or supply** — no upstream Apache/MIT dylib ships yet |
+| `rs-facetime-bridge-helper.dylib` | Built in-repo: `./scripts/build-bridge.sh` → `lib/` |
 
 Protocol mirrors the v2 file-queue model used by
 [openclaw/imsg](https://github.com/openclaw/imsg) (MIT), with FaceTime-specific
@@ -56,14 +54,15 @@ Reference implementations (study only, do not copy GPL server code):
 - [jesec/imessage-rs](https://github.com/jesec/imessage-rs) — FaceTime injection notes
 - Hosted APIs (e.g. Blooio) document FaceTime Audio as a separate surface
 
-Scaffold for a future in-tree helper:
+Build the helper (arm64e, macOS 14+):
 
 ```bash
-# Placeholder — implement Swift/ObjC helper that writes .rs-facetime-bridge-ready
-./scripts/scaffold-dylib.sh
+./scripts/build-bridge.sh
+# → lib/rs-facetime-bridge-helper.dylib
 ```
+
+Source: `helper/RsFacetimeInjected.m` (v2 file-queue IPC + TUCallCenter / `facetime-audio://`).
 
 ## Related
 
 - **[rs_imsg](https://github.com/undivisible/rs_imsg)** — iMessage (`private-api` uses imsg MIT dylib)
-- **[mono](https://github.com/atechnology-company/mono)** — agent runtime; wire FaceTime only when needed

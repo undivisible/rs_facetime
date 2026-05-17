@@ -39,6 +39,20 @@ impl BridgeClient {
         self.invoke(BridgeAction::EndCall, json!({}))
     }
 
+    pub fn answer_call(&self, call_uuid: &str) -> Result<BridgeResponse> {
+        self.invoke(
+            BridgeAction::AnswerCall,
+            json!({ "callUUID": call_uuid }),
+        )
+    }
+
+    pub fn leave_call(&self, call_uuid: &str) -> Result<BridgeResponse> {
+        self.invoke(
+            BridgeAction::LeaveCall,
+            json!({ "callUUID": call_uuid }),
+        )
+    }
+
     pub fn invoke(&self, action: BridgeAction, params: Value) -> Result<BridgeResponse> {
         let _ = self;
         invoke_default(action, params)

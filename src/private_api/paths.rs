@@ -21,6 +21,11 @@ pub fn rpc_outbox() -> PathBuf {
 pub fn dylib_search_paths() -> Vec<PathBuf> {
     let name = super::protocol::DEFAULT_DYLIB_NAME;
     let mut paths = Vec::new();
+    paths.push(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("lib")
+            .join(name),
+    );
     if let Ok(custom) = std::env::var("RS_FACETIME_BRIDGE_DYLIB") {
         paths.push(PathBuf::from(custom));
     }

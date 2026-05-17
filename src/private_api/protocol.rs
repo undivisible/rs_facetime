@@ -12,6 +12,8 @@ pub enum BridgeAction {
     Status,
     StartCall,
     EndCall,
+    AnswerCall,
+    LeaveCall,
 }
 
 impl BridgeAction {
@@ -21,6 +23,8 @@ impl BridgeAction {
             Self::Status => "status",
             Self::StartCall => "start-call",
             Self::EndCall => "end-call",
+            Self::AnswerCall => "answer-call",
+            Self::LeaveCall => "leave-call",
         }
     }
 }

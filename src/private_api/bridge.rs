@@ -19,9 +19,7 @@ impl BridgeClient {
     }
 
     pub fn is_ready() -> bool {
-        Launcher::discover()
-            .map(|l| l.is_ready())
-            .unwrap_or(false)
+        Launcher::discover().map(|l| l.is_ready()).unwrap_or(false)
     }
 
     pub fn ping(&self) -> Result<BridgeResponse> {
@@ -33,10 +31,7 @@ impl BridgeClient {
     }
 
     pub fn start_call(&self, handle: &str) -> Result<BridgeResponse> {
-        self.invoke(
-            BridgeAction::StartCall,
-            json!({ "handle": handle }),
-        )
+        self.invoke(BridgeAction::StartCall, json!({ "handle": handle }))
     }
 
     pub fn end_call(&self) -> Result<BridgeResponse> {
@@ -44,17 +39,11 @@ impl BridgeClient {
     }
 
     pub fn answer_call(&self, call_uuid: &str) -> Result<BridgeResponse> {
-        self.invoke(
-            BridgeAction::AnswerCall,
-            json!({ "callUUID": call_uuid }),
-        )
+        self.invoke(BridgeAction::AnswerCall, json!({ "callUUID": call_uuid }))
     }
 
     pub fn leave_call(&self, call_uuid: &str) -> Result<BridgeResponse> {
-        self.invoke(
-            BridgeAction::LeaveCall,
-            json!({ "callUUID": call_uuid }),
-        )
+        self.invoke(BridgeAction::LeaveCall, json!({ "callUUID": call_uuid }))
     }
 
     pub fn invoke(&self, action: BridgeAction, params: Value) -> Result<BridgeResponse> {

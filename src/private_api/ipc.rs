@@ -20,7 +20,10 @@ pub struct BridgeResponse {
 impl BridgeResponse {
     pub fn parse(raw: &Value) -> Result<Self> {
         let id = raw.get("id").map(stringify_id).unwrap_or_default();
-        let success = raw.get("success").and_then(|v| v.as_bool()).unwrap_or(false);
+        let success = raw
+            .get("success")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         let error = raw.get("error").and_then(|v| v.as_str()).map(str::to_owned);
         let data = if let Some(d) = raw.get("data") {
             d.clone()
@@ -63,12 +66,10 @@ pub fn invoke_blocking(
 
     let inbox = rpc_inbox();
     let outbox = rpc_outbox();
-    fs::create_dir_all(&inbox).map_err(|e| {
-        RsFacetimeError::PrivateApi(format!("mkdir inbox: {e}"))
-    })?;
-    fs::create_dir_all(&outbox).map_err(|e| {
-        RsFacetimeError::PrivateApi(format!("mkdir outbox: {e}"))
-    })?;
+    fs::create_dir_all(&inbox)
+        .map_err(|e| RsFacetimeError::PrivateApi(format!("mkdir inbox: {e}")))?;
+    fs::create_dir_all(&outbox)
+        .map_err(|e| RsFacetimeError::PrivateApi(format!("mkdir outbox: {e}")))?;
 
     let tmp = inbox.join(format!("{id}.tmp"));
     let request_path = inbox.join(format!("{id}.json"));
@@ -102,9 +103,5 @@ pub fn invoke_blocking(
 }
 
 pub fn invoke_default(action: BridgeAction, params: Value) -> Result<BridgeResponse> {
-    invoke_blocking(
-        action,
-        params,
-        Duration::from_millis(DEFAULT_TIMEOUT_MS),
-    )
+    invoke_blocking(action, params, Duration::from_millis(DEFAULT_TIMEOUT_MS))
 }

@@ -80,3 +80,7 @@ Source: `helper/RsFacetimeInjected.m` (arm64e default).
 ## Related
 
 - [rs_imessage](https://github.com/undivisible/rs_imessage) — iMessage (`private-api` uses imsg MIT dylib)
+
+## License
+
+ISC

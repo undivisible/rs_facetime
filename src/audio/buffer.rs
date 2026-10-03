@@ -315,7 +315,7 @@ impl PcmStream {
     /// Await one frame without requiring a particular async runtime. Dropping
     /// this future cancels only this wait; dropping the stream closes delivery.
     /// Call the capture session's `stop` to synchronously release its resources.
-    pub fn next(&mut self) -> impl Future<Output = Option<Result<PcmFrame, AudioError>>> + '_ {
+    pub fn recv(&mut self) -> impl Future<Output = Option<Result<PcmFrame, AudioError>>> + '_ {
         poll_fn(|cx| self.poll_next(cx))
     }
 }
@@ -533,16 +533,16 @@ mod tests {
     }
 
     #[test]
-    fn next_wait_is_cancel_safe_and_handles_preexisting_data() {
+    fn recv_wait_is_cancel_safe_and_handles_preexisting_data() {
         let (sender, mut stream) = pcm_channel(format(), BufferConfig::default()).unwrap();
         let counter = Arc::new(CountWake::default());
         let waker = Waker::from(counter);
         let mut cx = Context::from_waker(&waker);
-        let mut waiting = Box::pin(stream.next());
+        let mut waiting = Box::pin(stream.recv());
         assert!(waiting.as_mut().poll(&mut cx).is_pending());
         drop(waiting);
         sender.try_send(frame(1)).unwrap();
-        let mut next = Box::pin(stream.next());
+        let mut next = Box::pin(stream.recv());
         assert!(matches!(
             next.as_mut().poll(&mut cx),
             Poll::Ready(Some(Ok(_)))

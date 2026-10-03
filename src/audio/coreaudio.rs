@@ -168,12 +168,10 @@ impl CaptureSession for CoreAudioCapture {
                 .store(true, std::sync::atomic::Ordering::Release);
             if let Some(worker) = self.worker.take() {
                 worker.thread().unpark();
-                let result = worker.join().unwrap_or_else(|_| {
-                    Err(AudioError::Backend {
-                        operation: "capture worker panicked",
-                        code: 0,
-                    })
-                });
+                let result = worker.join().unwrap_or(Err(AudioError::Backend {
+                    operation: "capture worker panicked",
+                    code: 0,
+                }));
                 self.stopped = Some(result.clone());
                 return result;
             }

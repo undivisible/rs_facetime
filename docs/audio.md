@@ -83,12 +83,12 @@ if let Some(frame) = stream.try_next()? {
 # Ok::<(), rs_facetime::audio::AudioError>(())
 ```
 
-`stream.next().await` and `poll_next` work without an async runtime dependency.
+`stream.recv().await` and `poll_next` work without an async runtime dependency.
 Only one consumer owns the stream. Applications can call their own processing
 callback from that consumer; arbitrary caller callbacks never run on the HAL
 audio thread. `try_next` returns `Ok(None)` while temporarily empty, then
 `Err(Closed)` after draining a closed channel. Async/poll consumption yields
-an optional terminal error once and then `None`. Dropping a pending `next`
+an optional terminal error once and then `None`. Dropping a pending `recv`
 future cancels that wait; dropping the stream terminates capture delivery.
 
 `BufferConfig` bounds both queued buffers and samples per buffer, with at most

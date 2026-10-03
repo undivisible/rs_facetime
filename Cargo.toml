@@ -1,7 +1,8 @@
 [package]
 name = "rs_facetime"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
+rust-version = "1.85"
 description = "Unstable, still in development — FaceTime Audio private API bridge for macOS"
 license = "ISC"
 repository = "https://github.com/undivisible/rs_facetime"
@@ -18,8 +19,14 @@ name = "rs_facetime"
 path = "src/bin/rs_facetime.rs"
 required-features = ["cli"]
 
+[[example]]
+name = "audio_synthetic"
+required-features = ["audio"]
+
 [features]
 default = []
+audio = []
+coreaudio-capture = ["audio"]
 private-api = ["dep:uuid"]
 cli = ["dep:clap", "dep:tracing-subscriber", "private-api"]
 

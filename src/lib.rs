@@ -6,6 +6,10 @@
 pub mod error;
 pub mod paths;
 
+/// Optional PCM interfaces, independent of the FaceTime call-control bridge.
+#[cfg(feature = "audio")]
+pub mod audio;
+
 #[cfg(all(target_os = "macos", feature = "private-api"))]
 pub mod private_api;
 

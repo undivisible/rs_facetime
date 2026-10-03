@@ -6,6 +6,12 @@ default; `audio` and `coreaudio-capture` do not enable `private-api` or `cli`.
 Rust 1.85+ is required. Version 0.2 is the development version in this checkout,
 not a claim that a package has been published.
 
+This package uses [Cargo resolver 3](https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions),
+which prefers dependency versions compatible with the declared Rust version.
+A downstream workspace controls its own resolver: use resolver 3 or compatible
+locked dependency versions when building on Rust 1.85. A newer dependency release
+can require newer Rust even when its package version remains semver-compatible.
+
 | Feature | Platforms | What it supplies |
 | --- | --- | --- |
 | `audio` | Rust platforms with `std` | PCM frames, bounded channel, backend traits |

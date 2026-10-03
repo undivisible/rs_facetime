@@ -2,9 +2,71 @@
 // an audio device is called. Include implementation to exercise the real copy path.
 #include "../native/process_tap.m"
 #include <assert.h>
+#include <pthread.h>
+#include <sched.h>
 #include <stdio.h>
 
+enum { CONCURRENT_BLOCKS = 10000 };
+typedef struct { RSTap *tap; _Atomic bool done; } Producer;
+
+static void *produce_generated_audio(void *context) {
+    Producer *producer = context;
+    for (unsigned i = 0; i < CONCURRENT_BLOCKS; i++) {
+        float samples[] = { (float)i, (float)i + 0.25f, (float)i + 0.5f, (float)i + 0.75f };
+        AudioBufferList input = { .mNumberBuffers = 1,
+            .mBuffers = {{ 2, sizeof(samples), samples }} };
+        receive_audio(0, NULL, &input, NULL, NULL, NULL, producer->tap);
+    }
+    atomic_store_explicit(&producer->done, true, memory_order_release);
+    return NULL;
+}
+
+static void test_concurrent_ring(void) {
+    RSTap s = {0};
+    RSSlot slots[9] = {0};
+    float storage[9][4] = {0};
+    for (unsigned i = 0; i < 9; i++) slots[i].samples = storage[i];
+    s.capacity = 9; s.max_samples = 4; s.slots = slots;
+    s.timebase.numer = s.timebase.denom = 1;
+    s.format = (AudioStreamBasicDescription){ .mSampleRate = 48000,
+        .mFormatID = kAudioFormatLinearPCM,
+        .mFormatFlags = kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked,
+        .mBytesPerPacket = 8, .mFramesPerPacket = 1, .mBytesPerFrame = 8,
+        .mChannelsPerFrame = 2, .mBitsPerChannel = 32 };
+    atomic_init(&s.read_index, 0); atomic_init(&s.write_index, 0);
+    atomic_init(&s.dropped, 0); atomic_init(&s.malformed, false);
+    atomic_init(&s.accepting, true);
+    Producer producer = { .tap = &s };
+    atomic_init(&producer.done, false);
+    pthread_t thread;
+    assert(pthread_create(&thread, NULL, produce_generated_audio, &producer) == 0);
+    uint64_t received = 0, previous = 0;
+    for (;;) {
+        // Observe completion before reading: a final published slot must still
+        // drain if the producer finishes immediately after an empty read.
+        bool done = atomic_load_explicit(&producer.done, memory_order_acquire);
+        float samples[4];
+        RSFrameInfo info;
+        if (rs_tap_read(&s, samples, &info)) {
+            assert(info.samples == 4 && !info.has_host_time);
+            assert(!received || info.sequence > previous);
+            for (unsigned channel = 0; channel < 4; channel++)
+                assert(samples[channel] == (float)info.sequence + channel * 0.25f);
+            previous = info.sequence;
+            received++;
+        } else if (done) {
+            break;
+        } else {
+            sched_yield();
+        }
+    }
+    assert(pthread_join(thread, NULL) == 0);
+    assert(received > 0 && received + rs_tap_dropped(&s) == CONCURRENT_BLOCKS);
+    assert(!atomic_load(&s.malformed));
+}
+
 int main(void) {
+    test_concurrent_ring();
     RSTap s = {0};
     RSSlot slots[3] = {0};
     float storage[3][8] = {0};
@@ -78,6 +140,6 @@ int main(void) {
     assert(!selected_stream_matches(&s, reordered, sizeof(reordered)));
     assert(!selected_stream_matches(&s, original, sizeof(AudioObjectID)));
     assert(!selected_stream_matches(&s, original, 3));
-    puts("native ring: synthetic copy, overflow, timestamp, planar, wrap and malformed checks passed");
+    puts("native ring: concurrent ownership/order/drop accounting and synthetic buffer checks passed");
     return 0;
 }

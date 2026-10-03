@@ -10,15 +10,41 @@ FaceTime Audio private API bridge for macOS (separate from [`rs_imessage`](https
 |-------|--------|
 | Rust IPC client + FaceTime.app launcher | `private-api` feature |
 | `rs-facetime-bridge-helper.dylib` | `./scripts/build-bridge.sh` → `lib/` |
+| Owned PCM frames, bounded stream, capture/routing traits | Opt-in `audio` feature |
+| Explicit process/device/stream output tap | Experimental `coreaudio-capture`, macOS 14.2+ |
+| Audio sent into FaceTime | Caller-provided routing backend; no bundled virtual driver |
 
 Protocol: v2 file-queue under `~/Library/Containers/com.apple.FaceTime/Data/.rs-facetime-rpc/`.
 
-## Requirements
+## Call-control requirements
 
 - macOS 14+
 - FaceTime.app
 - **SIP disabled** for dylib injection
 - Helper dylib built for your OS/arch (see matrix below)
+
+The optional audio modules are independent of `private-api`: they do not inject
+the helper, require SIP changes, or use its JSON/file queue. See [audio usage and
+limitations](docs/audio.md). Default features remain empty. Audio capture and
+FaceTime input routing have **not** been verified end-to-end with a live call.
+
+## Optional PCM audio (0.2)
+
+```toml
+rs_facetime = { version = "0.2", default-features = false, features = ["audio"] }
+```
+
+`audio` supplies portable PCM types, bounded async/polling streams, and separate
+capture and injection backend traits. Add `coreaudio-capture` for the provided
+process-output adapter (Apple SDK 14.2+ to build, macOS 14.2+ to capture). Rust
+1.85+ is required. No capture, permission prompt, device change, driver install,
+or recording happens by enabling either feature.
+
+Try the generated-audio example without accessing a device:
+
+```bash
+cargo run --example audio_synthetic --features audio
+```
 
 ## Library
 

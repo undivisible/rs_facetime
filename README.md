@@ -74,6 +74,7 @@ cargo build --features cli
 ./target/debug/rs_facetime start-call "+15551234567"
 ./target/debug/rs_facetime status --json
 ./target/debug/rs_facetime end-call
+./target/debug/rs_facetime watch --json
 ```
 
 | Command | Description |

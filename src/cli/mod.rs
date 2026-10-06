@@ -49,6 +49,15 @@ pub enum Commands {
         #[arg(long)]
         call_uuid: String,
     },
+    /// Poll `status` and print a JSON event when the call state changes
+    Watch {
+        /// Milliseconds between status polls
+        #[arg(long, default_value_t = 1000)]
+        interval_ms: u64,
+        /// Stop after this many change events (0 = run until interrupted)
+        #[arg(long, default_value_t = 0)]
+        count: u64,
+    },
 }
 
 pub fn run(cli: Cli) -> Result<()> {
@@ -82,6 +91,32 @@ pub fn run(cli: Cli) -> Result<()> {
                 }),
             )?;
         }
+        Commands::Watch { interval_ms, count } => {
+            use rs_facetime::private_api::StatusWatcher;
+            let bridge = BridgeClient::connect()?;
+            let mut watcher = StatusWatcher::new();
+            let mut remaining = count;
+            loop {
+                let response = bridge.status()?;
+                if let Some(change) = watcher.observe(&response) {
+                    emit(
+                        cli.json,
+                        &serde_json::json!({
+                            "event": change.kind.as_str(),
+                            "previous": change.previous,
+                            "current": change.current,
+                        }),
+                    )?;
+                    if count != 0 {
+                        remaining = remaining.saturating_sub(1);
+                        if remaining == 0 {
+                            break;
+                        }
+                    }
+                }
+                std::thread::sleep(std::time::Duration::from_millis(interval_ms));
+            }
+        }
         other => {
             let bridge = BridgeClient::connect()?;
             let response = match other {
@@ -93,7 +128,8 @@ pub fn run(cli: Cli) -> Result<()> {
                 Commands::LeaveCall { call_uuid } => bridge.leave_call(&call_uuid)?,
                 Commands::Sip
                 | Commands::Ready
-                | Commands::Connect => unreachable!(),
+                | Commands::Connect
+                | Commands::Watch { .. } => unreachable!(),
             };
             emit(cli.json, &response_to_json(&response))?;
         }
